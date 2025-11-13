@@ -1,3 +1,4 @@
+// server.js
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
@@ -17,26 +18,48 @@ const PORT = process.env.PORT || 3000;
 await connectDb();
 await connectCloudinary();
 
-// Middleware
-app.use(cors());
+// Middleware Global
+app.use(cors()); // Izinkan CORS untuk semua rute
+
+// ----------------------------------------------------
+// KUNCI #1: RUTE WEBHOOK HARUS DI SINI
+// (SEBELUM 'express.json()')
+// ----------------------------------------------------
+app.post("/clerk", clerkWebhooks); // Webhook Clerk (mungkin butuh parser khusus, cek dokum Svix)
+
+// Beritahu Express untuk menggunakan 'parser mentah' HANYA untuk rute ini
+app.post(
+  "/api/stripe",
+  express.raw({ type: "application/json" }), // <-- Ini kuncinya!
+  stripeWebhooks
+);
+// ----------------------------------------------------
+
+// ----------------------------------------------------
+// KUNCI #2: MIDDLEWARE GLOBAL (SETELAH WEBHOOK)
+// ----------------------------------------------------
+// 'express.json()' sekarang hanya akan berlaku untuk rute DI BAWAHNYA
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
 
-// Routes
+// ----------------------------------------------------
+// 3. Rute API Sisanya
+// ----------------------------------------------------
 app.get("/", (req, res) => {
   res.send("Welcome to the Edemy API!");
 });
 
-app.post("/clerk", clerkWebhooks);
 app.use("/api/educator", educatorRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/users", userRouter);
-app.use(
-  "/api/stripe",
-  express.raw({ type: "application/json" }),
-  stripeWebhooks
-);
 
-app.listen(PORT, () => {
+// (Pastikan kamu mendaftarkan semua rute lain)
+app.use("/api/auth", authRoutes);
+app.app.use("/api/cart", protect, cartRoutes);
+app.use("/api/orders", orderRoutes);
+
+app.listen(PORT, "0.0.0.0", () => {
+  // <-- Jangan lupa '0.0.0.0' untuk hosting
   console.log(`Server is running on port ${PORT}`);
 });
