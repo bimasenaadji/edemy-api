@@ -74,7 +74,7 @@ export const stripeWebhooks = async (req, res) => {
   }
 
   switch (event.type) {
-    case "payment.intent.succeeded": {
+    case "payment_intent.succeeded": {
       const paymenIntent = event.data.object;
       const paymentIntentId = paymenIntent.id;
 
