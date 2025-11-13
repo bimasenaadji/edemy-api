@@ -54,11 +54,6 @@ app.use("/api/educator", educatorRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/users", userRouter);
 
-// (Pastikan kamu mendaftarkan semua rute lain)
-app.use("/api/auth", authRoutes);
-app.app.use("/api/cart", protect, cartRoutes);
-app.use("/api/orders", orderRoutes);
-
 app.listen(PORT, "0.0.0.0", () => {
   // <-- Jangan lupa '0.0.0.0' untuk hosting
   console.log(`Server is running on port ${PORT}`);
