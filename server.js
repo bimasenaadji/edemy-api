@@ -31,7 +31,11 @@ app.post("/clerk", clerkWebhooks);
 app.use("/api/educator", educatorRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/users", userRouter);
-app.use("/api/stripe", stripeWebhooks);
+app.use(
+  "/api/stripe",
+  express.raw({ type: "application/json" }),
+  stripeWebhooks
+);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
